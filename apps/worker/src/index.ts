@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
-import { startConsumer } from './services/kafkaConsumer';
-
 config();
+
+import { startConsumer } from './services/kafkaConsumer';
 
 const start = async () => {
     console.log('Starting Worker Service...');

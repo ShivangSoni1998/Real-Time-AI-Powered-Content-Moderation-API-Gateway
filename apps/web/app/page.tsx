@@ -57,7 +57,7 @@ export default function Home() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: "demo-user-" + Math.floor(Math.random() * 1000),
+          userId: crypto.randomUUID(), // Generate a valid UUID
           content: content,
         }),
       });
@@ -141,8 +141,8 @@ export default function Home() {
                   <div className="flex justify-between items-start mb-3">
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-bold tracking-wide ${sub.status === "APPROVED"
-                          ? "bg-green-500/10 text-green-400"
-                          : "bg-red-500/10 text-red-400"
+                        ? "bg-green-500/10 text-green-400"
+                        : "bg-red-500/10 text-red-400"
                         }`}
                     >
                       {sub.status}

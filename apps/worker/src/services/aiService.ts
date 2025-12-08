@@ -4,7 +4,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 export const classifyContent = async (content: string): Promise<{ status: 'APPROVED' | 'FLAGGED'; reason?: string; confidence: number }> => {
     try {
-        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
         const prompt = `
       Analyze the following content for moderation. 
