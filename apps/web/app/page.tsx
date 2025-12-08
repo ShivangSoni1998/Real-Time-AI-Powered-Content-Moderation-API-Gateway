@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { io, Socket } from "socket.io-client";
 import { submitContent } from "../services/api";
 import { SOCKET_URL, UI_TEXT } from "../lib/constants";
+import { Button } from "../components/ui/Button";
+import { TextArea } from "../components/ui/TextArea";
+import { ResultCard } from "../components/ui/ResultCard";
 
 interface ModerationResult {
   submissionId: string;
@@ -92,24 +95,21 @@ export default function Home() {
         <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
           <h2 className="text-xl font-semibold mb-4 text-gray-200">{UI_TEXT.TEST_CONTENT_HEADER}</h2>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <textarea
+            <TextArea
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder={UI_TEXT.PLACEHOLDER}
-              className="w-full h-32 bg-gray-900 border border-gray-700 rounded-lg p-4 text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
               disabled={isSubmitting}
+              rows={4}
             />
             <div className="flex justify-end">
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting || !content.trim()}
-                className={`px-6 py-2 rounded-lg font-medium transition-all ${isSubmitting || !content.trim()
-                  ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-500 text-white shadow-lg hover:shadow-blue-500/20 cursor-pointer"
-                  }`}
+                isLoading={isSubmitting}
               >
-                {isSubmitting ? UI_TEXT.SUBMITTING : UI_TEXT.SUBMIT_BUTTON}
-              </button>
+                {UI_TEXT.SUBMIT_BUTTON}
+              </Button>
             </div>
           </form>
         </div>
@@ -128,40 +128,10 @@ export default function Home() {
               </div>
             ) : (
               submissions.map((sub) => (
-                <div
+                <ResultCard
                   key={sub.submissionId}
-                  className={`p-6 rounded-xl border transition-all duration-300 animate-in fade-in slide-in-from-top-4 ${sub.status === "APPROVED"
-                    ? "bg-gray-800/50 border-green-500/20 hover:border-green-500/40"
-                    : "bg-gray-800/50 border-red-500/20 hover:border-red-500/40"
-                    }`}
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider ${sub.status === "APPROVED"
-                        ? "bg-green-500/10 text-green-400 border border-green-500/20"
-                        : "bg-red-500/10 text-red-400 border border-red-500/20"
-                        }`}
-                    >
-                      {sub.status}
-                    </span>
-                    <span className="text-xs text-gray-500 font-mono">
-                      {new Date(sub.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-
-                  <p className="text-gray-200 text-lg mb-3 leading-relaxed">{sub.originalContent}</p>
-
-                  {sub.status === "FLAGGED" && (
-                    <div className="bg-red-500/5 rounded-lg p-3 border border-red-500/10">
-                      <p className="text-sm text-red-300 flex items-center gap-2">
-                        <span className="font-semibold">Reason:</span> {sub.reason}
-                      </p>
-                      <p className="text-sm text-red-300/70 mt-1">
-                        Confidence: {(sub.confidence * 100).toFixed(1)}%
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  {...sub}
+                />
               ))
             )}
           </div>
