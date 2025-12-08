@@ -68,11 +68,17 @@ export default function Home() {
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex justify-between items-center border-b border-gray-800 pb-6">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
-              {UI_TEXT.TITLE}
-            </h1>
-            <p className="text-gray-400 mt-2">{UI_TEXT.SUBTITLE}</p>
+          <div className="flex items-center gap-4">
+            <div className="relative w-16 h-16">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/favicon-v2.png" alt="Logo" className="object-contain w-full h-full rounded-lg" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                {UI_TEXT.TITLE}
+              </h1>
+              <p className="text-gray-400 mt-1 text-sm">{UI_TEXT.SUBTITLE}</p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-3 h-3 rounded-full ${isConnected ? "bg-green-500 animate-pulse" : "bg-red-500"}`} />
