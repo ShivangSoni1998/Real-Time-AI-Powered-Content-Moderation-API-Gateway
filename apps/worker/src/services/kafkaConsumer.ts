@@ -1,4 +1,5 @@
 import { Kafka } from 'kafkajs';
+import Redis from 'ioredis';
 import { classifyContent } from './aiService';
 import { saveResult } from './dbService';
 
@@ -8,6 +9,10 @@ const kafka = new Kafka({
 });
 
 const consumer = kafka.consumer({ groupId: 'moderation-group' });
+
+// Initialize Redis Publisher
+const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const redisPublisher = new Redis(REDIS_URL);
 
 export const startConsumer = async () => {
     await consumer.connect();
@@ -31,10 +36,21 @@ export const startConsumer = async () => {
                 console.log(`AI Result for ${submissionId}:`, classification);
 
                 // 2. Save to DB
-                await saveResult(submissionId, classification, content, userId);
+                const savedSubmission = await saveResult(submissionId, classification, content, userId);
                 console.log(`Saved result for ${submissionId}`);
 
-                // 3. TODO: Notify Frontend (Phase 4)
+                // 3. Notify Frontend via Redis Pub/Sub
+                const updatePayload = {
+                    submissionId,
+                    status: classification.status,
+                    reason: classification.reason,
+                    confidence: classification.confidence,
+                    originalContent: content,
+                    timestamp: new Date().toISOString()
+                };
+
+                await redisPublisher.publish('moderation-updates', JSON.stringify(updatePayload));
+                console.log(`Published update for ${submissionId} to Redis`);
 
             } catch (error) {
                 console.error('Error processing message:', error);
