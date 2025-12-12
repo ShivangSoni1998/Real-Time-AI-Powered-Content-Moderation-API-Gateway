@@ -1,0 +1,44 @@
+services:
+  # API Gateway
+  - type: web
+    name: ai-moderation-api
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build -w apps/api
+    startCommand: npm start -w apps/api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: KAFKA_BROKER
+        sync: false
+      - key: KAFKA_USERNAME
+        sync: false
+      - key: KAFKA_PASSWORD
+        sync: false
+      - key: REDIS_URL
+        sync: false
+
+  # Worker Service
+  - type: worker
+    name: ai-moderation-worker
+    env: node
+    plan: free
+    buildCommand: npm install && npm run build -w apps/worker
+    startCommand: npm start -w apps/worker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: KAFKA_BROKER
+        sync: false
+      - key: KAFKA_USERNAME
+        sync: false
+      - key: KAFKA_PASSWORD
+        sync: false
+      - key: REDIS_URL
+        sync: false
