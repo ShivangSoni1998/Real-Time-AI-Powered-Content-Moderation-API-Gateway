@@ -24,7 +24,10 @@ const PORT = process.env.PORT || 3001;
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
 
 // Redis Subscriber for Real-time updates
-const redisSubscriber = new Redis(REDIS_URL);
+const redisSubscriber = new Redis(REDIS_URL, {
+    family: 0,
+    tls: REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+});
 
 redisSubscriber.subscribe('moderation-updates', (err, count) => {
     if (err) {

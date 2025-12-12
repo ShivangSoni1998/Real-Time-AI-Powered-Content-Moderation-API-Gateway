@@ -18,7 +18,10 @@ const consumer = kafka.consumer({ groupId: 'moderation-group' });
 
 // Initialize Redis Publisher
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-const redisPublisher = new Redis(REDIS_URL);
+const redisPublisher = new Redis(REDIS_URL, {
+    family: 0,
+    tls: REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+});
 
 export const startConsumer = async () => {
     await consumer.connect();
