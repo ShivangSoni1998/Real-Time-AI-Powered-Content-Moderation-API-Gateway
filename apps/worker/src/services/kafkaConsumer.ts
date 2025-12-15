@@ -18,10 +18,15 @@ const consumer = kafka.consumer({ groupId: 'moderation-group' });
 
 // Initialize Redis Publisher
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const isUpstash = REDIS_URL.includes('upstash');
 const redisPublisher = new Redis(REDIS_URL, {
     family: 0,
-    tls: REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+    tls: (REDIS_URL.startsWith('rediss://') || isUpstash) ? { rejectUnauthorized: false } : undefined
 });
+
+if (isUpstash) {
+    console.log('Detected Upstash Redis, enabling TLS');
+}
 
 export const startConsumer = async () => {
     await consumer.connect();

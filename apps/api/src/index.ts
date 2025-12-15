@@ -22,12 +22,15 @@ const io = new Server(httpServer, {
 
 const PORT = process.env.PORT || 3001;
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
-
-// Redis Subscriber for Real-time updates
+const isUpstash = REDIS_URL.includes('upstash');
 const redisSubscriber = new Redis(REDIS_URL, {
     family: 0,
-    tls: REDIS_URL.startsWith('rediss://') ? { rejectUnauthorized: false } : undefined
+    tls: (REDIS_URL.startsWith('rediss://') || isUpstash) ? { rejectUnauthorized: false } : undefined
 });
+
+if (isUpstash) {
+    console.log('Detected Upstash Redis, enabling TLS');
+}
 
 redisSubscriber.subscribe('moderation-updates', (err, count) => {
     if (err) {
