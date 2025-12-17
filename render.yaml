@@ -25,7 +25,7 @@ services:
     name: ai-moderation-worker
     env: node
     plan: free
-    buildCommand: npm install --include=dev && npm run build -w apps/worker
+    buildCommand: npm install --include=dev && npm run build -w packages/database && npm run build -w apps/worker
     startCommand: npm start -w apps/worker
     envVars:
       - key: NODE_ENV
