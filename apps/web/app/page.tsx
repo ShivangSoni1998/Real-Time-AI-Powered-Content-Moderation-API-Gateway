@@ -10,7 +10,7 @@ import { ResultCard } from "../components/ui/ResultCard";
 
 interface ModerationResult {
   submissionId: string;
-  status: "APPROVED" | "FLAGGED";
+  status: "APPROVED" | "FLAGGED" | "PENDING";
   reason?: string;
   confidence: number;
   originalContent: string;
@@ -40,7 +40,16 @@ export default function Home() {
 
     newSocket.on("moderation-update", (update: ModerationResult) => {
       console.log("Received update:", update);
-      setSubmissions((prev) => [update, ...prev]);
+      setSubmissions((prev) => {
+        // Check if we have a pending submission with this ID
+        const exists = prev.find(s => s.submissionId === update.submissionId);
+        if (exists) {
+          // Replace pending with actual result
+          return prev.map(s => s.submissionId === update.submissionId ? update : s);
+        }
+        // Otherwise add new (e.g. from another user)
+        return [update, ...prev];
+      });
     });
 
     setSocket(newSocket);
@@ -56,8 +65,21 @@ export default function Home() {
 
     setIsSubmitting(true);
     try {
-      await submitContent(content);
+      // 1. Call API
+      const response = await submitContent(content);
+
+      // 2. Optimistic UI: Add "Pending" card immediately
+      const pendingSubmission: ModerationResult = {
+        submissionId: response.submissionId,
+        status: "PENDING",
+        confidence: 0,
+        originalContent: content,
+        timestamp: new Date().toISOString(),
+      };
+
+      setSubmissions((prev) => [pendingSubmission, ...prev]);
       setContent("");
+
     } catch (error) {
       console.error("Error submitting content:", error);
       alert(UI_TEXT.FAILED_SUBMIT);
