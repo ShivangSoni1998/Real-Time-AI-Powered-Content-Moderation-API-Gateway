@@ -4,125 +4,81 @@ A robust, event-driven full-stack application that provides real-time content mo
 
 ![Project Logo](./apps/web/public/logo.png)
 
-## 🚀 Features
+## 🚀 Live Demo
 
--   **Real-Time Analysis**: Instant feedback on content safety using WebSockets.
--   **AI-Powered**: Leverages Google's Gemini 2.5 Flash model for accurate and nuanced classification.
--   **Event-Driven Architecture**: Decoupled services using Apache Kafka for high throughput and reliability.
--   **Scalable Infrastructure**: Built with Docker, Redis, and PostgreSQL to handle production-grade loads.
--   **Modern Frontend**: A sleek, responsive dashboard built with Next.js 15 and Tailwind CSS.
+-   **Frontend**: `https://ai-powered-content-moderator.vercel.app/`
 
-## 🛠️ Tech Stack & Rationale
+## 💡 Rationale: Why this exists?
 
-We chose a modern, scalable tech stack to ensure performance, maintainability, and developer experience.
+In the modern digital age, User-Generated Content (UGC) is the lifeblood of platforms like social media, forums, and gaming. However, this freedom comes with a significant challenge: **Toxicity**.
 
-### Frontend
--   **Next.js 15 (React)**: Chosen for its server-side rendering capabilities, SEO benefits, and excellent developer experience.
--   **Tailwind CSS**: For rapid UI development with a utility-first approach, ensuring a consistent and modern design system.
--   **Socket.io Client**: To enable real-time, bidirectional communication with the server for instant updates.
--   **Axios**: For robust and easy-to-use HTTP requests.
+### The Problem
+1.  **Scale**: Big platforms receive millions of messages per second. Manual review is impossible.
+2.  **Latency**: Users expect instant interaction. Traditional moderation pipelines are often slow batch processes.
+3.  **Context**: Keyword filtering (regex) is easily bypassed and fails to understand nuance (e.g., sarcasm vs. hate speech).
+4.  **Burnout**: Human moderators suffer from mental health issues due to constant exposure to toxic content.
 
-### Backend (API Gateway)
--   **Node.js & Express**: Lightweight and efficient for handling high-concurrency I/O operations.
--   **Apache Kafka (Producer)**: Acts as the backbone of our event-driven architecture, decoupling the API from the heavy AI processing. This ensures the API remains fast and responsive even under load.
--   **Redis (Pub/Sub)**: Used for real-time message broadcasting to connected clients, ensuring low-latency updates.
--   **Socket.io Server**: Manages WebSocket connections and broadcasts moderation results to the specific user.
+### The Solution
+This application solves these problems by combining **Event-Driven Architecture** with **Generative AI**:
+-   **Asynchronous Processing**: Using **Apache Kafka**, we decouple the user-facing API from the heavy AI processing. This ensures the UI never freezes, even if millions of requests flood in.
+-   **AI Understanding**: Instead of simple keywords, we use **Google Gemini AI** to understand the *intent* and *sentiment* of the text, catching subtle toxicity that regex misses.
+-   **Real-Time Feedback**: By leveraging **Redis Pub/Sub** and **WebSockets**, we provide instant feedback to the user, educating them immediately if their content is flagged.
 
-### Worker Service
--   **Node.js**: efficient for processing streams of data.
--   **Kafka (Consumer)**: Consumes messages from the queue at its own pace, preventing system overload.
--   **Google Gemini AI**: Provides state-of-the-art natural language understanding for accurate content classification (Safe vs. Unsafe).
--   **Prisma & PostgreSQL**: A powerful ORM and relational database combination for reliable data persistence and type safety.
+## 🌍 Impact on Big Tech Platforms
 
-### Infrastructure
--   **Docker & Docker Compose**: Containerizes all services (Kafka, Zookeeper, Redis, Postgres) for a consistent and reproducible development environment.
--   **Turborepo**: Manages the monorepo structure, optimizing build and test workflows.
+Implementing a system like this at scale (e.g., for Meta, X, or Discord) has profound impacts:
+1.  **Safer Communities**: Proactive removal of hate speech and harassment creates a welcoming environment for diverse users.
+2.  **Brand Safety**: Advertisers avoid platforms overrun with toxicity. Automated moderation protects revenue streams.
+3.  **Operational Efficiency**: AI handles 99% of the volume, allowing human moderators to focus only on complex edge cases, reducing burnout and cost.
+4.  **Legal Compliance**: Helps platforms comply with regulations like the EU's Digital Services Act (DSA) by ensuring rapid action on illegal content.
+
+## 🛠️ Tech Stack
+
+-   **Frontend**: Next.js 15, Tailwind CSS, Socket.io Client
+-   **Backend**: Node.js, Express, Socket.io Server
+-   **Messaging**: Apache Kafka (Confluent Cloud)
+-   **Caching/PubSub**: Redis (Upstash)
+-   **AI**: Google Gemini Pro
+-   **Database**: PostgreSQL (Neon), Prisma ORM
+-   **DevOps**: Docker, Turborepo, Vercel, Render
+
+## 🏗️ Architecture
+
+1.  **User** submits content -> **API Gateway**
+2.  **API Gateway** pushes event to **Kafka** -> Returns "Pending" ID
+3.  **Worker Service** consumes event -> Calls **Gemini AI**
+4.  **Worker Service** saves result to **Postgres** -> Publishes to **Redis**
+5.  **API Gateway** subscribes to **Redis** -> Pushes via **WebSocket** -> **Frontend**
 
 ## 🏁 Getting Started
 
-Follow these steps to get the project running locally.
-
 ### Prerequisites
-
--   **Node.js** (v18 or higher)
--   **Docker** and **Docker Compose** installed and running.
--   A **Google Gemini API Key** (Get one [here](https://aistudio.google.com/app/apikey)).
+-   Node.js v18+
+-   Docker (for local infra)
+-   Google Gemini API Key
 
 ### Installation
 
-1.  **Clone the repository**:
+1.  **Clone & Install**:
     ```bash
-    git clone <repository-url>
-    cd <repository-name>
-    ```
-
-2.  **Install Dependencies**:
-    ```bash
+    git clone <repo-url>
     npm install
     ```
 
-3.  **Configure Environment Variables**:
-    -   **API Gateway**:
-        -   Copy `apps/api/.env.example` to `apps/api/.env`.
-    -   **Worker Service**:
-        -   Copy `apps/worker/.env.example` to `apps/worker/.env`.
-        -   **CRITICAL**: Open `apps/worker/.env` and paste your `GEMINI_API_KEY`.
+2.  **Environment Setup**:
+    -   Copy `.env.example` to `.env` in `apps/api` and `apps/worker`.
+    -   Add your `GEMINI_API_KEY` in `apps/worker/.env`.
 
-### Running the Application
-
-1.  **Start Infrastructure Services**:
-    This spins up Kafka, Zookeeper, Redis, and PostgreSQL.
+3.  **Run Locally**:
     ```bash
+    # Start Kafka, Redis, Postgres
     docker-compose up -d
-    ```
 
-2.  **Initialize the Database**:
-    Push the Prisma schema to your local Postgres instance.
-    ```bash
-    cd packages/database
-    npx prisma db push
-    cd ../..
-    ```
-
-3.  **Start the Services**:
-    You will need **3 separate terminals** to run the full stack:
-
-    **Terminal 1: API Gateway**
-    ```bash
+    # Start all services
     npm run dev -w apps/api
-    ```
-    *Runs on http://localhost:3001*
-
-    **Terminal 2: Worker Service**
-    ```bash
     npm run dev -w apps/worker
-    ```
-
-    **Terminal 3: Frontend**
-    ```bash
     npm run dev -w apps/web
     ```
-    *Runs on http://localhost:3000*
-
-## 🧪 How to Test
-
-1.  Open your browser and navigate to [http://localhost:3000](http://localhost:3000).
-2.  Wait for the status indicator to turn **Green** (System Online).
-3.  Type some text into the text area (e.g., "This is a friendly message" or "I hate you").
-4.  Click **Analyze Content**.
-5.  Watch the card appear instantly in the Live Feed with the AI's classification!
-
-## 📂 Project Structure
-
-```
-├── apps
-│   ├── api          # Express API Gateway
-│   ├── web          # Next.js Frontend
-│   └── worker       # Background Processing Service
-├── packages
-│   └── database     # Shared Prisma/DB configuration
-└── docker-compose.yml # Infrastructure definition
-```
 
 ---
-Built with ❤️ using modern web technologies.
+Built with ❤️ by Shivang Soni
