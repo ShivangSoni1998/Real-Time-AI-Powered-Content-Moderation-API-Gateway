@@ -4,10 +4,6 @@ A robust, event-driven full-stack application that provides real-time content mo
 
 ![Project Logo](./apps/web/public/logo.png)
 
-## 🚀 Live Demo
-
--   **Frontend**: `https://ai-powered-content-moderator.vercel.app/`
-
 ## 💡 Rationale: Why this exists?
 
 In the modern digital age, User-Generated Content (UGC) is the lifeblood of platforms like social media, forums, and gaming. However, this freedom comes with a significant challenge: **Toxicity**.
